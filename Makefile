@@ -12,6 +12,8 @@ include $(THEOS_MAKE_PATH)/aggregate.mk
 include $(THEOS_MAKE_PATH)/library.mk
 
 after-install::
+	-rm *.deb
 	-install.exec "killall AppStore"
 	-install.exec "killall Preferences"
 	-install.exec "killall itunesstored"
+	-install.exec "open com.apple.Preferences"

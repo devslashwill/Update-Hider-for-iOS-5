@@ -59,26 +59,10 @@
     CGContextRef context = UIGraphicsGetCurrentContext();
     
     CGContextSetFillColorWithColor(context, self.topLineColor.CGColor);
-    CGContextFillRect(context, CGRectMake(0, 0, 320, 1));
+    CGContextFillRect(context, CGRectMake(0, 0, self.bounds.size.width, 1));
     
     CGContextSetFillColorWithColor(context, self.bottomLineColor.CGColor);
-    CGContextFillRect(context, CGRectMake(0, self.bounds.size.height - 1, 320, 1));
+    CGContextFillRect(context, CGRectMake(0, self.bounds.size.height - 1, self.bounds.size.width, 1));
 }
-
-/*- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated
-{
-    [super setHighlighted:highlighted animated:animated];
-    
-    self.textLabel.shadowOffset = CGSizeMake(0, !highlighted);
-    self.detailTextLabel.shadowOffset = CGSizeMake(0, !highlighted);
-}
-
-- (void)setSelected:(BOOL)selected animated:(BOOL)animated
-{
-    [super setSelected:selected animated:animated];
-    
-    self.textLabel.shadowOffset = CGSizeMake(0, !selected);
-    self.detailTextLabel.shadowOffset = CGSizeMake(0, !selected);
-}*/
 
 @end
