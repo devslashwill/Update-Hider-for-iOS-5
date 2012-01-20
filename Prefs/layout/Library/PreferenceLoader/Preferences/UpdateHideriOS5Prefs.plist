@@ -1,0 +1,10 @@
+{
+	entry = {
+		bundle = UpdateHideriOS5Prefs;
+		cell = PSLinkCell;
+		detail = "UpdateHideriOS5PrefsController";
+		icon = "UpdateHiderPrefs.png";
+		isController = 1;
+		label = "Update Hider";
+	};
+}

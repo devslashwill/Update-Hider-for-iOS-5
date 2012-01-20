@@ -1,0 +1,12 @@
+{
+	Filter = {
+		Mode = Any;
+		Executables = (
+			itunesstored,
+		);
+		Bundles = (
+			"com.apple.AppStore",
+		);
+	};
+	SupportsRoot = 1;
+}

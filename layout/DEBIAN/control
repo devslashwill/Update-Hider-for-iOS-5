@@ -1,0 +1,10 @@
+Package: com.whomer.UpdateHideriOS5
+Name: Update Hider for iOS5
+Depends: mobilesubstrate, preferenceloader, firmware (>= 5.0)
+Conflicts: org.thebigboss.updatehider
+Version: 1.0
+Architecture: iphoneos-arm
+Description: Hide updates in AppStore.app
+Maintainer: Will Homer
+Author: Will Homer
+Section: Tweaks
