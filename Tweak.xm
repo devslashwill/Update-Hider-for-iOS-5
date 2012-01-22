@@ -110,26 +110,31 @@ BOOL isUpdateBlocked(NSString *bundleID, NSString *versionID)
         if (numOfUpdates == numBlocked)
         {
             // Do this using JavaScript because I can't figure out how to create a new DOMElement instance
-            NSString *js = [NSString stringWithFormat:@" \
-                            var noUpdatesDiv = document.createElement(\"div\"); \
-                            noUpdatesDiv.setAttribute(\"class\", \"no-updates\"); \
-                            noUpdatesDiv.innerHTML = \"%@\"; \
-                            document.body.getElementsByClassName(\"stack\")[0].appendChild(noUpdatesDiv);", NO_UPDATES_STRING];
+            NSString *js = [NSString stringWithFormat:@" %@ \
+                                var noUpdatesDiv = document.createElement(\"div\"); \
+                                noUpdatesDiv.setAttribute(\"class\", \"no-updates\"); \
+                                noUpdatesDiv.innerHTML = \"%@\"; \
+                                %@.appendChild(noUpdatesDiv); \
+                                iTunes.viewController.navigationItem.rightItem=null;",
+                                (IS_IPAD == YES) ? @"document.body.removeChild(document.body.getElementsByClassName(\"stack\")[0]);" : @"",
+                                NO_UPDATES_STRING, (IS_IPAD == YES) ? @"document.body" : @"document.body.getElementsByClassName(\"stack\")[0]"];
+            
             [frame _stringByEvaluatingJavaScriptFromString:js];
         }
         
-        NSUInteger newUpdateCount = numOfUpdates - numBlocked;
-        NSString *newUpdateCountStr = [NSString stringWithFormat:@"%i", newUpdateCount];
-        [doc.body setAttribute:@"update-count" value:newUpdateCountStr];
+        NSString *js = [NSString stringWithFormat:@" \
+                            var num = %i; \
+                            var updatesSection = iTunes.sectionsController.sectionWithIdentifier(\"updates\"); \
+                            if (num > 0) { \
+                                updatesSection.badgeValue = num+\"\"; \
+                                iTunes.application.iconBadgeNumber = num; \
+                            } else { \
+                                updatesSection.badgeValue = null; \
+                                iTunes.application.iconBadgeNumber = 0; \
+                        }", (numOfUpdates - numBlocked)];
+                            
         
-        UITabBarItem *updateTabItem = [[[[[%c(ASClientApplicationController) sharedController] tabBarController] viewControllers] objectAtIndex:(IS_IPAD == YES) ? 5 : 4] tabBarItem];
-        
-        if (newUpdateCount == 0)
-            updateTabItem.badgeValue = nil;
-        else
-            updateTabItem.badgeValue = newUpdateCountStr;
-        
-        [[UIApplication sharedApplication] setApplicationIconBadgeNumber:newUpdateCount];
+        [frame _stringByEvaluatingJavaScriptFromString:js];
     }
     
     %orig;

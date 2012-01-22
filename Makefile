@@ -1,4 +1,4 @@
-export THEOS_DEVICE_IP=192.168.2.6
+export THEOS_DEVICE_IP=192.168.2.5
 include theos/makefiles/common.mk
 
 LIBRARY_NAME = UpdateHideriOS5
@@ -16,4 +16,3 @@ after-install::
 	-install.exec "killall AppStore"
 	-install.exec "killall Preferences"
 	-install.exec "killall itunesstored"
-	-install.exec "open com.apple.Preferences"

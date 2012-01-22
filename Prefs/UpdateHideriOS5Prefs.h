@@ -38,13 +38,14 @@
 @property (nonatomic, assign) int barStyle;
 @end
 
-@interface UpdateHideriOS5PrefsController: PSViewController <UITableViewDelegate, UITableViewDataSource, SSSoftwareUpdatesRequestDelegate, IconImageDownloaderDelegate>
+@interface UpdateHideriOS5PrefsController: PSViewController <UITableViewDelegate, UITableViewDataSource, SSSoftwareUpdatesRequestDelegate, IconImageDownloaderDelegate, UIScrollViewDelegate>
 {
     UITableView *_tableView;
     NSMutableArray *_blockedUpdates;
     NSMutableArray *_realUpdates;
     NSMutableDictionary *_iconDownloaders;
     LoadingCell *_loadingCell;
+    UILabel *_pullToRefreshLabel;
 }
 
 - (void)loadImagesForVisibleCells;

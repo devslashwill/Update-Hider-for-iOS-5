@@ -21,6 +21,7 @@
     [_blockedUpdates release];
     [_realUpdates release];
     [_iconDownloaders release];
+    [_pullToRefreshLabel release];
     [_tableView release];
     [super dealloc];
 }
@@ -235,6 +236,17 @@
     headerBG.backgroundColor = RGB(152, 152, 156);
     [_tableView addSubview:headerBG];
     [headerBG release];
+    
+    _pullToRefreshLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, -44, self.view.frame.size.width, 44)];
+    _pullToRefreshLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    _pullToRefreshLabel.textColor = RGB(58, 58, 58);
+    _pullToRefreshLabel.shadowColor = RGB(194, 194, 194);
+    _pullToRefreshLabel.shadowOffset = CGSizeMake(0, 1);
+    _pullToRefreshLabel.font = [UIFont boldSystemFontOfSize:16.0f];
+    _pullToRefreshLabel.backgroundColor = [UIColor clearColor];
+    _pullToRefreshLabel.textAlignment = UITextAlignmentCenter;
+    _pullToRefreshLabel.text = @"Pull to reload updates";
+    [_tableView addSubview:_pullToRefreshLabel];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -365,14 +377,6 @@
     }
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (indexPath.section == 0 && [_realUpdates count] == 0 && [_loadingCell isLoading] == NO)
-    {
-        [self runUpdatesRequest];
-    }
-}
-
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (indexPath.section == 1)
@@ -411,8 +415,24 @@
     return UITableViewCellEditingStyleDelete;
 }
 
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    if (scrollView.dragging == YES)
+    {
+        if (scrollView.contentOffset.y <= -65.0f)
+            _pullToRefreshLabel.text = @"Release to reload updates";
+        else if (scrollView.contentOffset.y < 0.0f)
+            _pullToRefreshLabel.text = @"Pull to reload updates";
+    }
+}
+
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
 {
+    if (scrollView.contentOffset.y <= -65.0f && [_loadingCell isLoading] == NO)
+    {
+        [self runUpdatesRequest];
+    }
+    
     if (!decelerate)
         [self loadImagesForVisibleCells];
 }

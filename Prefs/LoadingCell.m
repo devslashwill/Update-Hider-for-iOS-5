@@ -38,6 +38,8 @@
     if (loading == _loading)
         return;
     
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:loading];
+    
     _loading = loading;
     
     self.textLabel.text = nil;
