@@ -1,4 +1,4 @@
-export THEOS_DEVICE_IP=192.168.2.5
+export THEOS_DEVICE_IP=192.168.2.7
 include theos/makefiles/common.mk
 
 LIBRARY_NAME = UpdateHideriOS5

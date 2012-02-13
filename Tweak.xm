@@ -1,51 +1,4 @@
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
-
-#define APP_STORE_UI_FRAMEWORK [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/AppStoreUI.framework"]
-#define NO_UPDATES_STRING NSLocalizedStringFromTableInBundle(@"NO_UPDATES", @"Localizable", APP_STORE_UI_FRAMEWORK, @"")
-#define IS_IPAD ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad)
-
-@interface DOMNode : NSObject
-@property (readonly, retain) DOMNode *parentNode;
-- (id)getElementsByClassName:(NSString *)className;
-- (id)removeChild:(id)node;
-@end
-
-@interface DOMElement : DOMNode
-- (id)getAttribute:(NSString *)attr;
-- (void)setAttribute:(NSString *)attr value:(NSString *)value;
-@property (readonly, retain) DOMElement *firstElementChild;
-@property (readonly, retain) DOMNode *parentNode;
-@end
-
-@interface DOMNodeList : NSObject
-@property (readonly) NSUInteger length;
-- (id)item:(NSUInteger)index;
-@end
-
-@interface DOMDocument : NSObject
-@property (retain) DOMElement *body;
-- (id)getElementsByClassName:(NSString *)className;
-@end
-
-@interface WebDataSource : NSObject
-- (NSURLRequest *)initialRequest;
-@end
-
-@interface WebFrame : NSObject
-- (DOMDocument *)DOMDocument;
-- (WebDataSource *)dataSource;
-- (NSString *)_stringByEvaluatingJavaScriptFromString:(NSString *)js;
-@end
-
-@interface ASClientApplicationController : NSObject
-+ (id)sharedController;
-@end
-
-@interface SoftwareUpdate : NSObject
-@property (readonly, nonatomic) NSDictionary *dictionary;
-@property (readonly, nonatomic) NSNumber *_versionIdentifier;
-@end
+#import "Header.h"
 
 NSArray *blockedUpdates = nil;
 
@@ -67,16 +20,18 @@ BOOL isUpdateBlocked(NSString *bundleID, NSString *versionID)
 
 %group AppStoreHooks
 
-// Hook here to execute the hideUpdates js func /before/ the webpage appears
-%hook WebDefaultUIKitDelegate
+%hook SUWebViewController
 
-- (void)webView:(id)webView didFinishDocumentLoadForFrame:(WebFrame *)frame
+- (void)webViewDidFinishLoad:(SUWebView *)webView
 {
-    if ([[[[[frame dataSource] initialRequest] URL] absoluteString] isEqualToString:@"http://ax.su.itunes.apple.com/WebObjects/MZSoftwareUpdate.woa/wa/viewSoftwareUpdates"])
-    {
+    %orig;
+    
+    if ([[[[[webView webDataSource] initialRequest] URL] absoluteString] isEqualToString:@"http://ax.su.itunes.apple.com/WebObjects/MZSoftwareUpdate.woa/wa/viewSoftwareUpdates"])
+    {        
         NSUInteger numBlocked = 0;
+        UIViewController *updatesVC = [(UINavigationController *)[[[%c(SUClientApplicationController) sharedController] tabBarController] selectedViewController] topViewController];
         
-        DOMDocument *doc = [frame DOMDocument];
+        DOMDocument *doc = [webView _DOMDocument];
         DOMNodeList *appDivs = [doc.body getElementsByClassName:@"lockup application"];
         NSUInteger numOfUpdates = [[doc.body getAttribute:@"update-count"] intValue];
         
@@ -109,35 +64,24 @@ BOOL isUpdateBlocked(NSString *bundleID, NSString *versionID)
         
         if (numOfUpdates == numBlocked)
         {
-            // Do this using JavaScript because I can't figure out how to create a new DOMElement instance
-            NSString *js = [NSString stringWithFormat:@" %@ \
-                                var noUpdatesDiv = document.createElement(\"div\"); \
-                                noUpdatesDiv.setAttribute(\"class\", \"no-updates\"); \
-                                noUpdatesDiv.innerHTML = \"%@\"; \
-                                %@.appendChild(noUpdatesDiv); \
-                                iTunes.viewController.navigationItem.rightItem=null;",
-                                (IS_IPAD == YES) ? @"document.body.removeChild(document.body.getElementsByClassName(\"stack\")[0]);" : @"",
-                                NO_UPDATES_STRING, (IS_IPAD == YES) ? @"document.body" : @"document.body.getElementsByClassName(\"stack\")[0]"];
+            if (IS_IPAD)
+                [doc.body removeChild:[[doc.body getElementsByClassName:@"stack"] item:0]];
             
-            [frame _stringByEvaluatingJavaScriptFromString:js];
+            DOMHTMLElement *noUpdatesDiv = (DOMHTMLElement *)[doc createElement:@"div"];
+            [noUpdatesDiv setClassName:@"no-updates"];
+            [noUpdatesDiv setInnerHTML:NO_UPDATES_STRING];
+            [IS_IPAD ? doc.body : [[doc.body getElementsByClassName:@"stack"] item:0] appendChild:noUpdatesDiv];
+            
+            updatesVC.tabBarItem.badgeValue = nil;
+            [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
+            updatesVC.navigationItem.rightBarButtonItem = nil;
         }
-        
-        NSString *js = [NSString stringWithFormat:@" \
-                            var num = %i; \
-                            var updatesSection = iTunes.sectionsController.sectionWithIdentifier(\"updates\"); \
-                            if (num > 0) { \
-                                updatesSection.badgeValue = num+\"\"; \
-                                iTunes.application.iconBadgeNumber = num; \
-                            } else { \
-                                updatesSection.badgeValue = null; \
-                                iTunes.application.iconBadgeNumber = 0; \
-                        }", (numOfUpdates - numBlocked)];
-                            
-        
-        [frame _stringByEvaluatingJavaScriptFromString:js];
+        else
+        {
+            updatesVC.tabBarItem.badgeValue = [NSString stringWithFormat:@"%i", (numOfUpdates - numBlocked)];
+            [UIApplication sharedApplication].applicationIconBadgeNumber = (numOfUpdates - numBlocked);
+        }
     }
-    
-    %orig;
 }
 
 %end
@@ -171,10 +115,7 @@ BOOL isUpdateBlocked(NSString *bundleID, NSString *versionID)
 
 - (void)setSoftwareUpdates:(NSArray *)updates
 {
-    if (blockedUpdates != nil)
-        [blockedUpdates release];
-    
-    blockedUpdates = [[NSArray alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.whomer.UpdateHideriOS5.plist"];
+    NSArray *blockedUpdates = [[NSArray alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.whomer.UpdateHideriOS5.plist"];
     
     NSMutableArray *updatesToKeep = [[NSMutableArray alloc] init];
     
@@ -188,6 +129,8 @@ BOOL isUpdateBlocked(NSString *bundleID, NSString *versionID)
             [updatesToKeep addObject:su];
         }
     }
+    
+    [blockedUpdates release];
     
     %orig([updatesToKeep autorelease]);
 }
