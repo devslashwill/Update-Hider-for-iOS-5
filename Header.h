@@ -45,6 +45,10 @@
 + (id)sharedController;
 @end
 
+@interface SUTabBarController : UITabBarController
+- (id)viewControllerForSectionIdentifier:(NSString *)identifier;
+@end
+
 @interface SoftwareUpdate : NSObject
 @property (readonly, nonatomic) NSDictionary *dictionary;
 @property (readonly, nonatomic) NSNumber *_versionIdentifier;

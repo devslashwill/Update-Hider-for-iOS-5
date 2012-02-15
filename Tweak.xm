@@ -29,7 +29,7 @@ BOOL isUpdateBlocked(NSString *bundleID, NSString *versionID)
     if ([[[[[webView webDataSource] initialRequest] URL] absoluteString] isEqualToString:@"http://ax.su.itunes.apple.com/WebObjects/MZSoftwareUpdate.woa/wa/viewSoftwareUpdates"])
     {        
         NSUInteger numBlocked = 0;
-        UIViewController *updatesVC = [(UINavigationController *)[[[%c(SUClientApplicationController) sharedController] tabBarController] selectedViewController] topViewController];
+        UIViewController *updatesVC = [[(SUTabBarController *)[[%c(SUClientApplicationController) sharedController] tabBarController] viewControllerForSectionIdentifier:@"updates"] topViewController];
         
         DOMDocument *doc = [webView _DOMDocument];
         DOMNodeList *appDivs = [doc.body getElementsByClassName:@"lockup application"];
