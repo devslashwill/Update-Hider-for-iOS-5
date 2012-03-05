@@ -20,18 +20,18 @@ BOOL isUpdateBlocked(NSString *bundleID, NSString *versionID)
 
 %group AppStoreHooks
 
-%hook SUWebViewController
+%hook WebDefaultUIKitDelegate
 
-- (void)webViewDidFinishLoad:(SUWebView *)webView
+- (void)webView:(id)webView didFinishDocumentLoadForFrame:(WebFrame *)frame
 {
     %orig;
     
-    if ([[[[[webView webDataSource] initialRequest] URL] absoluteString] isEqualToString:@"http://ax.su.itunes.apple.com/WebObjects/MZSoftwareUpdate.woa/wa/viewSoftwareUpdates"])
+    if ([[[[[frame dataSource] initialRequest] URL] absoluteString] isEqualToString:@"http://ax.su.itunes.apple.com/WebObjects/MZSoftwareUpdate.woa/wa/viewSoftwareUpdates"])
     {        
         NSUInteger numBlocked = 0;
         UIViewController *updatesVC = [[(SUTabBarController *)[[%c(SUClientApplicationController) sharedController] tabBarController] viewControllerForSectionIdentifier:@"updates"] topViewController];
         
-        DOMDocument *doc = [webView _DOMDocument];
+        DOMDocument *doc = [frame DOMDocument];
         DOMNodeList *appDivs = [doc.body getElementsByClassName:@"lockup application"];
         NSUInteger numOfUpdates = [[doc.body getAttribute:@"update-count"] intValue];
         

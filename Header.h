@@ -36,9 +36,9 @@
 - (NSURLRequest *)initialRequest;
 @end
 
-@interface SUWebView : UIWebView
-- (DOMDocument *)_DOMDocument;
-- (WebDataSource *)webDataSource;
+@interface WebFrame : NSObject
+- (DOMDocument *)DOMDocument;
+- (WebDataSource *)dataSource;
 @end
 
 @interface ASClientApplicationController : NSObject
