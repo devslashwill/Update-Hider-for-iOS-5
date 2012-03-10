@@ -104,6 +104,9 @@
     
     if ([_realUpdates count] > 0)
     {
+        NSSortDescriptor *titleSort = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES selector:@selector(caseInsensitiveCompare:)];
+        [_realUpdates sortUsingDescriptors:[NSArray arrayWithObject:titleSort]];
+        
         [_tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
         [self loadImagesForVisibleCells];
     }

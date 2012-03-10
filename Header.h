@@ -50,7 +50,9 @@
 @end
 
 @interface SoftwareUpdate : NSObject
+- (id)initWithDictionary:(NSDictionary *)dictionary;
 @property (readonly, nonatomic) NSDictionary *dictionary;
+@property (readonly, nonatomic) NSNumber *itemIdentifier;
 @property (readonly, nonatomic) NSNumber *_versionIdentifier;
 @end
 

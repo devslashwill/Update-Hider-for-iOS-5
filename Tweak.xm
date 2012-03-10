@@ -111,6 +111,41 @@ BOOL isUpdateBlocked(NSString *bundleID, NSString *versionID)
 
 %group iTunesStoreDHooks
 
+%hook SoftwareUpdatesProvider
+
+- (NSArray *)_copyUpdatesFromItems:(NSArray *)items
+{
+    NSArray *origUpdates = %orig;
+    NSMutableArray *newUpdates = [origUpdates mutableCopy];
+    
+    for (NSDictionary *update in items)
+    {
+        BOOL found = NO;
+        
+        for (SoftwareUpdate *swUpdate in origUpdates)
+        {
+            if ([[update objectForKey:@"item-id"] isEqualToNumber:[swUpdate itemIdentifier]])
+            {
+                found = YES;
+                break;
+            }
+        }
+        
+        if (found == NO)
+        {
+            SoftwareUpdate *newUpdate = [[objc_getClass("SoftwareUpdate") alloc] initWithDictionary:update];
+            [newUpdates addObject:newUpdate];
+            [newUpdate release];
+        }
+    }
+    
+    [origUpdates release];
+    
+    return newUpdates;
+}
+
+%end
+
 %hook SoftwareUpdateStore
 
 - (void)setSoftwareUpdates:(NSArray *)updates

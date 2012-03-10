@@ -5,7 +5,6 @@ UpdateHideriOS5Prefs_FILES = AppCell.m LoadingCell.m IconImageDownloader.m Updat
 UpdateHideriOS5Prefs_INSTALL_PATH = /Library/PreferenceBundles
 UpdateHideriOS5Prefs_FRAMEWORKS = UIKit CoreGraphics QuartzCore
 UpdateHideriOS5Prefs_PRIVATE_FRAMEWORKS = Preferences StoreServices iTunesStore iTunesStoreUI
-DEBUG = 1
 
 include $(THEOS_MAKE_PATH)/bundle.mk
 
